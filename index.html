@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#faf5f0">
-<title>inbox.lv — pasaki, kas patīk</title>
+<title>Inbox.lv jauniešiem: kā tev patīk?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,8 +32,9 @@ button{cursor:pointer}
 /* top bar */
 .bar{position:sticky;top:0;z-index:20;background:rgba(250,245,240,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
 .bar-in{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;min-height:60px}
-.logo{font:800 22px/1 var(--display);letter-spacing:-.03em;white-space:nowrap}
-.logo b{color:var(--red)}
+.logo{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.logo img{height:26px;width:auto;display:block}
+.chips.err{outline:2px solid var(--red);outline-offset:8px;border-radius:14px}
 .beta{font:600 11px/1 var(--text);background:var(--ink);color:#fff;border-radius:99px;padding:4px 8px;margin-left:6px;vertical-align:3px;letter-spacing:.02em}
 .count{margin-left:auto;font-weight:600;font-size:14px;color:var(--muted);white-space:nowrap}
 .count b{color:var(--ink)}
@@ -155,7 +156,7 @@ footer button{background:none;border:0;text-decoration:underline;color:inherit;p
 
 <div class="bar">
   <div class="bar-in">
-    <div class="logo">inbox<b>.lv</b><span class="beta">jaunais</span></div>
+    <div class="logo"><img src="assets/logo.png" alt="inbox.lv" width="150" height="26"><span class="beta">jaunais</span></div>
     <div class="count" id="count" aria-live="polite"></div>
     <button class="btn btn-dark" id="jump" disabled>Beigt</button>
   </div>
@@ -165,15 +166,15 @@ footer button{background:none;border:0;text-decoration:underline;color:inherit;p
 <div class="layout">
   <aside class="live" aria-label="Jaunā portāla dzīvā versija">
     <div class="phone"><iframe id="live" title="Jaunais inbox.lv portāls" loading="lazy" src="https://inbox-new-portal.lovable.app/m2"></iframe></div>
-    <p>👆 Šī ir dzīvā lapa — paskrolē un pamēģini.</p>
+    <p>👆 Šī ir dzīvā lapa - paskrolē un pamēģini.</p>
   </aside>
 
   <main class="flow" id="flow">
     <!-- FORM -->
     <div id="form" class="flow">
       <section class="hero">
-        <h1>Kā tev patīk <em>jaunais inbox.lv?</em></h1>
-        <p>Pirms palaižam jauno portālu, gribam zināt, ko domā tu. Pasaki, kas patīk un kas ne — aizņems apmēram minūti.</p>
+        <h1>Inbox.lv jauniešiem: <em>kā tev patīk?</em></h1>
+        <p>Pirms palaižam jauno portālu, gribam zināt, ko domā tu. Pasaki, kas patīk un kas ne - aizņems apmēram minūti.</p>
         <div class="row">
           <button class="btn btn-red" id="start">Sākt ↓</button>
           <a class="btn btn-ghost" style="display:inline-flex;align-items:center;text-decoration:none" href="https://inbox-new-portal.lovable.app/m2" target="_blank" rel="noopener">Atvērt dzīvo lapu ↗</a>
@@ -196,7 +197,7 @@ footer button{background:none;border:0;text-decoration:underline;color:inherit;p
         <div class="scale" id="scale" role="group" aria-label="Kopējais vērtējums"></div>
         <div class="scale-l"><span>Nepatīk</span><span>Super!</span></div>
 
-        <span class="label">Cik tev gadu? <small style="font-weight:400;color:var(--muted)">(nav obligāti)</small></span>
+        <span class="label" id="ageLabel">Cik tev gadu?</span>
         <div class="chips" id="ageChips"></div>
 
         <label class="label" for="comment">Vēl kaut kas? <small style="font-weight:400;color:var(--muted)">(nav obligāti)</small></label>
@@ -224,7 +225,7 @@ const SECTIONS = [
   {id:'top',     title:'Augša: laiks un dzimšanas dienas', sub:'Laika ziņa un draugu dzimšanas dienas',   h:133},
   {id:'email',   title:'E-pasts',                          sub:'Pēdējās vēstules un ātrās pogas',         h:383},
   {id:'game',    title:'Dienas spēle',                     sub:'Vārdu mīkla katru dienu',                  h:486, dislike:['Spēles man neinteresē'], like:['Gribu spēlēt katru dienu']},
-  {id:'offers',  title:'Sponsoru piedāvājumi',             sub:'Atlaides un kodi studentiem',              h:290, dislike:['Par daudz reklāmas'], like:['Atlaides ir foršas']},
+  {id:'offers',  title:'Sponsoru piedāvājumi',             sub:'Atlaides un kodi jauniešiem',             h:290, dislike:['Par daudz reklāmas'], like:['Atlaides ir foršas']},
   {id:'opps',    title:'Iespējas tev',                     sub:'Prakses, darbs, stipendijas, pasākumi',    h:328, like:['Palīdz atrast darbu/praksi']},
   {id:'ad',      title:'Reklāmas baneris',                 sub:'Reklāma starp sadaļām',                    h:166, dislike:['Reklāma traucē'], like:['Neuzbāzīga']},
   {id:'widgets', title:'Logrīki un Premium',               sub:'Faili, CV un Inbox Premium',               h:384},
@@ -242,12 +243,13 @@ const VOTES = [
   {v:'dislike', e:'👎', t:'Nepatīk'},
 ];
 const IDEAS = [
-  ['🌙','Tumšais režīms'],['🎮','Vairāk spēļu'],['🎵','Mūzika un podkasti'],['📅','Kalendārs un uzdevumi'],
-  ['🤖','AI palīgs'],['💬','Čats ar draugiem'],['🎓','Konspekti un mācības'],['💼','Vairāk darba un prakšu'],
-  ['🎟️','Pasākumu biļetes'],['📰','Personalizētas ziņas'],['🔔','Gudri paziņojumi'],['🌍','Valodu izvēle'],
+  ['🌙','Tumšais režīms'],['🎮','Vairāk spēļu'],['🎵','Mūzika un podkasti'],['📅','Kalendārs'],
+  ['🤖','Integrēts AI palīgs labākai digitālajai ikdienai'],['💬','Čats ar draugiem'],['🎓','Konspekti un mācības'],['💼','Vairāk darba un prakšu'],
+  ['🎟️','Pasākumu biļetes'],['📰','Personalizētas ziņas'],['📝','CV un dokumentu šabloni'],
+  ['📣','Atgriezeniskās saites poga'],['🏫','Sasaiste ar skolas portāliem (E-klase, Moodle u.c.)'],
 ];
 const SCALE = ['😖','😕','😐','🙂','🤩'];
-const AGES = ['līdz 15','16–18','19–24','25+'];
+const AGES = ['līdz 15','16-18','19-24','25+'];
 const MAX_IDEAS = 3;
 /* ====================================================================== */
 
@@ -355,7 +357,7 @@ ideaWrap.addEventListener('click', e => {
   const t = b.dataset.t, on = state.ideas.includes(t);
   if(on) state.ideas = state.ideas.filter(x => x !== t);
   else if(state.ideas.length >= MAX_IDEAS){
-    const h = $('#ideaHint'); h.classList.add('warn'); h.textContent = `Maksimums ${MAX_IDEAS} — noņem kādu, lai izvēlētos citu`;
+    const h = $('#ideaHint'); h.classList.add('warn'); h.textContent = `Maksimums ${MAX_IDEAS} - noņem kādu, lai izvēlētos citu`;
     b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return;
   } else state.ideas.push(t);
   paintIdeas(); save(); update();
@@ -378,7 +380,7 @@ const ageWrap = $('#ageChips');
 AGES.forEach(t => { const b = el(`<button type="button" class="chip" aria-pressed="false"></button>`); b.textContent = t; ageWrap.appendChild(b); });
 ageWrap.addEventListener('click', e => {
   const b = e.target.closest('.chip'); if(!b) return;
-  state.age = state.age === b.textContent ? null : b.textContent; paintAge(); save();
+  state.age = state.age === b.textContent ? null : b.textContent; ageWrap.classList.remove('err'); paintAge(); save();
 });
 function paintAge(){ ageWrap.querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(b.textContent === state.age))); }
 $('#comment').addEventListener('input', e => { state.comment = e.target.value; save(); });
@@ -424,6 +426,11 @@ async function loadResponses(){
 
 $('#submit').addEventListener('click', async () => {
   if(answeredCount() === 0 && !state.overall){ toast('Novērtē vismaz vienu sadaļu 👆'); $('#cards').scrollIntoView({behavior:'smooth'}); return; }
+  if(!state.age){
+    toast('Norādi savu vecumu 👆'); ageWrap.classList.add('err');
+    $('#ageLabel').scrollIntoView({behavior:'smooth', block:'center'});
+    ageWrap.classList.remove('shake'); void ageWrap.offsetWidth; ageWrap.classList.add('shake'); return;
+  }
   const btn = $('#submit'); btn.disabled = true; btn.textContent = 'Sūtām…';
   const resp = {
     id: Math.random().toString(36).slice(2, 10), ts: new Date().toISOString(), device: deviceType(),
@@ -476,18 +483,18 @@ async function showResults(justSent=false, sendMode){
 
   let html = '';
   if(justSent){
-    html += `<section class="hero"><h1>Paldies! <em>💛</em></h1><p>Tavas atbildes ir saņemtas. Zemāk — ko domā citi jaunieši.</p>
-      ${sendMode === 'local' ? '<p class="hint warn">Serveris nav pieejams — atbildes saglabātas tikai šajā ierīcē.</p>' : ''}</section>`;
+    html += `<section class="hero"><h1>Paldies! <em>💛</em></h1><p>Tavas atbildes ir saņemtas. Zemāk - ko domā citi jaunieši.</p>
+      ${sendMode === 'local' ? '<p class="hint warn">Serveris nav pieejams - atbildes saglabātas tikai šajā ierīcē.</p>' : ''}</section>`;
   } else {
     html += `<section class="hero"><h1>Rezultāti <em>📊</em></h1><p>${ag.n ? `Atbildējuši <b>${ag.n}</b> jaunieši.` : 'Vēl nav neviena atbilde.'}${params.has('demo') ? ' (demo dati)' : ''}</p></section>`;
   }
   if(!ag.n){ html += '<section class="card"><p class="lead" style="margin:0">Kad kāds atbildēs, te parādīsies rezultāti.</p></section>'; box.innerHTML = html; addBack(box); return; }
 
   html += `<section class="card"><h2 class="big">Kopējais iespaids</h2>
-    <div style="display:flex;align-items:center;gap:14px;margin-top:8px"><span class="big-n">${avg ? avg.toFixed(1) : '–'}</span>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:8px"><span class="big-n">${avg ? avg.toFixed(1) : '-'}</span>
     <div><div style="font-size:28px">${avg ? SCALE[Math.round(avg)-1] : ''}</div><div class="hint" style="margin:0">no 5 · ${ag.overall.n} ${lv(ag.overall.n,"vērtējums","vērtējumi")}</div></div></div></section>`;
 
-  html += `<section class="card"><h2 class="big">Pa sadaļām</h2><p class="lead">Zaļš — patīk, dzeltens — normāli, sarkans — nepatīk.</p>`;
+  html += `<section class="card"><h2 class="big">Pa sadaļām</h2><p class="lead">Zaļš - patīk, dzeltens - normāli, sarkans - nepatīk.</p>`;
   const order = SECTIONS.map(s => ({s, a: ag.sections[s.id]})).map(x => ({...x, tot: x.a.like + x.a.ok + x.a.dislike}))
     .sort((x,y) => (y.a.like - y.a.dislike) / (y.tot||1) - (x.a.like - x.a.dislike) / (x.tot||1));
   order.forEach(({s, a, tot}) => {
@@ -543,6 +550,8 @@ function downloadCSV(list){
 
 /* ---------- init ---------- */
 function init(){
+  state.ideas = (state.ideas || []).filter(t => IDEAS.some(x => x[1] === t));   // vecu nosaukumu tīrīšana
+  if(state.age && !AGES.includes(state.age)) state.age = null;
   cardsEl.querySelectorAll('.card').forEach(paintCard);
   paintIdeas(); paintScale(); paintAge(); $('#comment').value = state.comment || ''; update();
 }
