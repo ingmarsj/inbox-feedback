@@ -57,8 +57,11 @@ button{cursor:pointer}
   .layout{grid-template-columns:399px minmax(0,580px);justify-content:center;gap:56px;padding-top:32px}
   .live{display:block;position:sticky;top:92px;align-self:start}
 }
-.phone{width:399px;height:min(800px,calc(100vh - 150px));border:10px solid var(--ink);border-radius:46px;overflow:hidden;background:#fff;box-shadow:0 30px 60px -20px rgba(40,10,0,.35)}
-.phone iframe{width:100%;height:100%;border:0;display:block}
+/* Prototips = ritināms attēls, nevis iframe: iframe lielos ekrānos (Samsung Flip) mēdza salūzt (baltas švīkas, nepareizs mērogs). Tīši bez ēnām un filtriem. */
+.phone{width:399px;height:min(800px,calc(100vh - 150px));border:10px solid var(--ink);border-radius:46px;background:#fff;overflow:hidden}
+.phone-scroll{width:100%;height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:#fff}
+.phone-scroll::-webkit-scrollbar{display:none}
+.phone-scroll img{display:block;width:100%;height:auto}
 .live p{margin:14px 6px 0;font-size:14px;color:var(--muted);text-align:center}
 
 .flow{display:grid;gap:16px;min-width:0}
@@ -164,8 +167,8 @@ footer button{background:none;border:0;text-decoration:underline;color:inherit;p
 </div>
 
 <div class="layout">
-  <aside class="live" aria-label="Jaunā portāla dzīvā versija">
-    <div class="phone"><iframe id="live" title="Jaunais inbox.lv portāls" loading="lazy" src="https://inbox-new-portal.lovable.app/m2"></iframe></div>
+  <aside class="live" aria-label="Jaunā portāla prototips">
+    <div class="phone"><div class="phone-scroll" tabindex="0"><img src="assets/portal.webp" alt="Jaunā inbox.lv portāla prototips, visa lapa" width="375" height="2836"></div></div>
     <p>👆 Paskrolē un izmēģini</p>
   </aside>
 
@@ -218,50 +221,15 @@ footer button{background:none;border:0;text-decoration:underline;color:inherit;p
 </footer>
 <div class="toast" id="toast" role="status"></div>
 
+<script src="config.js"></script>
+<script src="survey-core.js"></script>
 <script>
-/* ====== KONFIGURĀCIJA (te var mainīt tekstus, sadaļas un idejas) ====== */
 const LIVE_URL = 'https://inbox-new-portal.lovable.app/m2';
-const SECTIONS = [
-  {id:'top',     title:'Augša: laiks un dzimšanas dienas', sub:'Laika ziņa un draugu dzimšanas dienas',   h:133},
-  {id:'email',   title:'E-pasts',                          sub:'Pēdējās vēstules un ātrās pogas',         h:383},
-  {id:'game',    title:'Dienas spēle',                     sub:'Vārdu mīkla katru dienu',                  h:486, dislike:['Spēles man neinteresē'], like:['Gribu spēlēt katru dienu']},
-  {id:'offers',  title:'Sponsoru piedāvājumi',             sub:'Atlaides un kodi jauniešiem',             h:290, dislike:['Par daudz reklāmas'], like:['Atlaides ir foršas']},
-  {id:'opps',    title:'Iespējas tev',                     sub:'Prakses, darbs, stipendijas, pasākumi',    h:328, like:['Palīdz atrast darbu/praksi']},
-  {id:'ad',      title:'Reklāmas baneris',                 sub:'Reklāma starp sadaļām',                    h:166, dislike:['Reklāma traucē'], like:['Neuzbāzīga']},
-  {id:'widgets', title:'Logrīki un Premium',               sub:'Faili, CV un Inbox Premium',               h:384},
-  {id:'news',    title:'Ziņas',                            sub:'Ziņu plūsma ar kategorijām',               h:589, dislike:['Ziņas neinteresē'], like:['Labi, ka ziņas ir te']},
-];
-const TAGS = {
-  like:    ['Izskatās labi','Noderīgi man','Viegli saprast','Gribu to lietot'],
-  ok:      ['Neko īpašu','Nezinu, vai lietošu','Var labāk','Pietrūkst kaut kā'],
-  dislike: ['Nesaprotu, kas tas','Man to nevajag','Izskatās slikti','Par pārblīvētu','Grūti lietot'],
-};
-const Q = {like:'Kas tieši patīk? 😍', ok:'Kas varētu būt labāk? 🤔', dislike:'Kas nepatīk? 😬'};
-const VOTES = [
-  {v:'like',    e:'😍', t:'Patīk'},
-  {v:'ok',      e:'😐', t:'Normāli'},
-  {v:'dislike', e:'👎', t:'Nepatīk'},
-];
-const IDEAS = [
-  ['🌙','Tumšais režīms'],['🎮','Vairāk spēļu'],['🎵','Mūzika un podkasti'],['📅','Kalendārs'],
-  ['🤖','Integrēts AI palīgs labākai digitālajai ikdienai'],['💬','Čats ar draugiem'],
-  ['🎟️','Pasākumu biļetes'],['📰','Personalizētas ziņas'],['📝','CV un dokumentu šabloni'],
-  ['📣','Atgriezeniskās saites poga'],['🏫','Sasaiste ar skolas portāliem (E-klase, Moodle u.c.)'],
-];
-const SCALE = ['😖','😕','😐','🙂','🤩'];
-const AGES = ['līdz 15','16-18','19-24','25+'];
-const MAX_IDEAS = 3;
-/* ====================================================================== */
+const {SECTIONS, TAGS, Q, VOTES, IDEAS, SCALE, AGES, MAX_IDEAS, LS, store, aggregate, lv, esc, topN} = Survey;   // sadaļas, teksti un datu glabāšana: survey-core.js
 
 const $ = (s, r=document) => r.querySelector(s);
 const el = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstElementChild; };
 const params = new URLSearchParams(location.search);
-const ADMIN_KEY = params.get('admin');
-const LS = {
-  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch{ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} },
-  del(k){ try{ localStorage.removeItem(k); }catch{} },
-};
 
 let state = LS.get('inbox_fb_draft', null) || {sections:{}, ideas:[], overall:null, age:null, comment:''};
 const save = () => LS.set('inbox_fb_draft', state);
@@ -402,27 +370,7 @@ function toast(msg){
   clearTimeout(toast.id); toast.id = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
-/* ---------- storage: serveris, ja ir, citādi localStorage ---------- */
 const deviceType = () => /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
-async function sendResponse(resp){
-  try{
-    const r = await fetch('api/feedback', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(resp)});
-    if(!r.ok) throw new Error(r.status);
-    return 'server';
-  }catch{
-    const all = LS.get('inbox_fb_responses', []); all.push(resp); LS.set('inbox_fb_responses', all);
-    return 'local';
-  }
-}
-async function loadResponses(){
-  try{
-    const r = await fetch('api/responses' + (ADMIN_KEY ? '?key=' + encodeURIComponent(ADMIN_KEY) : ''));
-    if(!r.ok) throw new Error(r.status);
-    const j = await r.json(); return {list: j.responses, mode:'server'};
-  }catch{
-    return {list: LS.get('inbox_fb_responses', []), mode:'local'};
-  }
-}
 
 $('#submit').addEventListener('click', async () => {
   if(answeredCount() === 0 && !state.overall){ toast('Novērtē vismaz vienu sadaļu 👆'); $('#cards').scrollIntoView({behavior:'smooth'}); return; }
@@ -436,30 +384,14 @@ $('#submit').addEventListener('click', async () => {
     id: Math.random().toString(36).slice(2, 10), ts: new Date().toISOString(), device: deviceType(),
     sections: state.sections, ideas: state.ideas, overall: state.overall, age: state.age, comment: state.comment.trim(),
   };
-  const mode = await sendResponse(resp);
-  LS.set('inbox_fb_done', resp.id); LS.del('inbox_fb_draft');
+  const mode = await store.submit(resp);
   btn.disabled = false; btn.textContent = 'Nosūtīt atbildes';
+  if(mode === 'error'){ toast('Neizdevās nosūtīt, pamēģini vēlreiz'); return; }
+  LS.set('inbox_fb_done', resp.id); LS.del('inbox_fb_draft');
   showResults(true, mode);
 });
 
 /* ---------- rezultāti ---------- */
-function aggregate(list){
-  const out = {n: list.length, sections:{}, ideas:{}, overall:{sum:0, n:0}};
-  SECTIONS.forEach(s => out.sections[s.id] = {like:0, ok:0, dislike:0, tags:{like:{}, ok:{}, dislike:{}}});
-  list.forEach(r => {
-    SECTIONS.forEach(s => {
-      const a = r.sections?.[s.id]; if(!a?.vote) return;
-      const o = out.sections[s.id]; if(!['like','ok','dislike'].includes(a.vote)) return;
-      o[a.vote]++; (a.tags || []).forEach(t => o.tags[a.vote][t] = (o.tags[a.vote][t] || 0) + 1);
-    });
-    (r.ideas || []).forEach(t => out.ideas[t] = (out.ideas[t] || 0) + 1);
-    if(r.overall){ out.overall.sum += r.overall; out.overall.n++; }
-  });
-  return out;
-}
-const topN = (obj, k=2) => Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,k);
-const lv = (n, one, many) => (n % 10 === 1 && n % 100 !== 11) ? one : many;
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function demoData(){
   const rs = [], rnd = (a) => a[Math.floor(Math.random()*a.length)];
@@ -475,7 +407,7 @@ async function showResults(justSent=false, sendMode){
   $('#form').hidden = true; $('#count').hidden = $('#jump').hidden = true; const box = $('#results'); box.hidden = false;
   $('#toggleRes').textContent = 'Atpakaļ uz aptauju';
   box.innerHTML = '<div class="card"><p class="lead" style="margin:0">Ielādējam…</p></div>';
-  const {list, mode} = await loadResponses();
+  const {list} = await store.loadPublic();
   const data = params.has('demo') ? demoData() : list;
   const ag = aggregate(data);
   const avg = ag.overall.n ? ag.overall.sum / ag.overall.n : null;
@@ -484,7 +416,7 @@ async function showResults(justSent=false, sendMode){
   let html = '';
   if(justSent){
     html += `<section class="hero"><h1>Paldies! <em>💛</em></h1><p>Tavas atbildes ir saņemtas. Zemāk - ko domā citi jaunieši.</p>
-      ${sendMode === 'local' ? '<p class="hint warn">Serveris nav pieejams - atbildes saglabātas tikai šajā ierīcē.</p>' : ''}</section>`;
+      ${sendMode === 'local' ? '<p class="hint warn">Serveris nav pieejams - atbildes saglabātas tikai šajā ierīcē.</p>' : ''}${sendMode === 'queued' ? '<p class="hint warn">Nav interneta - atbildes nosūtīsim, tiklīdz savienojums atjaunosies. Neaizver lapu.</p>' : ''}</section>`;
   } else {
     html += `<section class="hero"><h1>Rezultāti <em>📊</em></h1><p>${ag.n ? `Atbildējuši <b>${ag.n}</b> jaunieši.` : 'Vēl nav neviena atbilde.'}${params.has('demo') ? ' (demo dati)' : ''}</p></section>`;
   }
@@ -514,17 +446,7 @@ async function showResults(justSent=false, sendMode){
       ideas.map(([t,n]) => { const e = (IDEAS.find(x => x[1] === t) || ['',''])[0]; return `<div><i style="transform:scaleX(${n/maxIdea})"></i><span>${e} ${esc(t)}</span><span>${n}</span></div>`; }).join('') + `</div></section>`;
   }
 
-  if(ADMIN_KEY || params.has('demo')){
-    const cm = [];
-    data.forEach(r => {
-      if(r.comment) cm.push(`<div class="cmt"><small>Kopējais komentārs${r.age ? ' · ' + esc(r.age) : ''}</small>${esc(r.comment)}</div>`);
-      SECTIONS.forEach(s => { const a = r.sections?.[s.id]; if(a?.note) cm.push(`<div class="cmt"><small>${VOTES.find(v=>v.v===a.vote)?.e || ''} ${s.title}</small>${esc(a.note)}</div>`); });
-    });
-    html += `<section class="card"><h2 class="big">Komentāri 💬</h2>${cm.join('') || '<p class="lead" style="margin:0">Nav komentāru.</p>'}
-      <button class="btn btn-dark submit" id="csv">Lejupielādēt CSV</button></section>`;
-  }
   box.innerHTML = html;
-  const csv = $('#csv'); if(csv) csv.onclick = () => downloadCSV(data);
   addBack(box);
   if(justSent) window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -538,15 +460,6 @@ function backToForm(){
 }
 $('#toggleRes').addEventListener('click', () => { $('#results').hidden ? showResults() : backToForm(); });
 
-function downloadCSV(list){
-  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-  const head = ['laiks','ierīce','vecums','kopējais','komentārs','idejas', ...SECTIONS.flatMap(s => [s.id+'_balss', s.id+'_iemesli', s.id+'_piezīme'])];
-  const rows = list.map(r => [r.ts, r.device, r.age, r.overall, r.comment, (r.ideas||[]).join('; '),
-    ...SECTIONS.flatMap(s => { const a = r.sections?.[s.id] || {}; return [a.vote, (a.tags||[]).join('; '), a.note]; })]);
-  const csv = '﻿' + [head, ...rows].map(r => r.map(q).join(',')).join('\r\n');
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
-  a.download = 'inbox-feedback.csv'; a.click(); URL.revokeObjectURL(a.href);
-}
 
 /* ---------- init ---------- */
 function init(){
@@ -556,7 +469,8 @@ function init(){
   paintIdeas(); paintScale(); paintAge(); $('#comment').value = state.comment || ''; update();
 }
 init();
-if(params.has('results') || params.has('demo') || ADMIN_KEY) showResults();
+store.flushPending();   // ja agrāk nebija interneta, nosūta neiesūtītās atbildes
+if(params.has('results') || params.has('demo')) showResults();
 else if(LS.get('inbox_fb_done', null)){ $('#toggleRes').textContent = 'Skatīt rezultātus'; }
 </script>
 </body>
